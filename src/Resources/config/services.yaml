@@ -2,6 +2,9 @@ services:
     _defaults:
         public: false
 
-
+    htc_strict_form_mapper.form_extension:
+        class: HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension
+        tags:
+            - { name: form.type_extension }
 
 
