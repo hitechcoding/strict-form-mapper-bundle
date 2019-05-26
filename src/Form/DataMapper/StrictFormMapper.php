@@ -4,33 +4,39 @@ declare(strict_types=1);
 
 namespace HTC\StrictFormMapper\Form\DataMapper;
 
+use function strpos;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormError;
 use TypeError;
-use function iterator_to_array;
 
 class StrictFormMapper implements DataMapperInterface
 {
-    public function __construct()
+    private $defaultMapper;
+
+    public function __construct(DataMapperInterface $defaultMapper)
     {
+        $this->defaultMapper = $defaultMapper;
     }
 
     public function mapDataToForms($data, $forms): void
     {
-        $forms = iterator_to_array($forms);
+        $unmappedForms = [];
+
         foreach ($forms as $form) {
-            if ($reader = $form->getConfig()->getOption('get_value')) {
+            $reader = $form->getConfig()->getOption('get_value');
+            if (!$reader) {
+                $unmappedForms[] = $form;
+            } else {
                 try {
                     $value = $reader($data);
                     $form->setData($value);
                 } catch (TypeError $e) {
                     $form->setData(null);
                 }
-            } else {
-                dd(123);
             }
         }
 
+        $this->defaultMapper->mapDataToForms($data, $unmappedForms);
     }
 
     /**
@@ -38,17 +44,29 @@ class StrictFormMapper implements DataMapperInterface
      */
     public function mapFormsToData($forms, &$data): void
     {
-        $forms = iterator_to_array($forms);
+        $unmappedForms = [];
+
         foreach ($forms as $form) {
             $config = $form->getConfig();
-            if ($writer = $config->getOption('update_value')) {
+            $writer = $config->getOption('update_value');
+            if (!$writer) {
+                $unmappedForms[] = $form;
+            } else {
                 try {
-                    $writer($data, $form->getData());
+                    $writer($form->getData(), $data);
                 } catch (TypeError $e) {
-                    $errorMessage = $config->getOption('write_error_message');
-                        $form->addError(new FormError($errorMessage, null, [], null, $e));
+                    // Second argument is typehinted data object.
+                    // We are not interested if exception happens on it; it means 'factory' failed and it is at top-level error message.
+                    if (strpos($e->getMessage(), 'Argument 2') === false) {
+                        $errorMessage = $config->getOption('write_error_message');
+                        if ($errorMessage) {
+                            $form->addError(new FormError($errorMessage, null, [], null, $e));
+                        }
+                    }
                 }
             }
         }
+
+        $this->defaultMapper->mapFormsToData($unmappedForms, $data);
     }
 }

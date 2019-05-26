@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace HTC\StrictFormMapper\Form\Extension;
 
-use function array_map;
-use Closure;
 use HTC\StrictFormMapper\Form\DataMapper\StrictFormMapper;
-use function is_array;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -20,13 +17,20 @@ use Symfony\Component\OptionsResolver\Exception\InvalidArgumentException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use TypeError;
+use Closure;
+use function is_array;
+use function array_map;
 
 class StrictFormTypeExtension extends AbstractTypeExtension
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['compound']) {
-            $builder->setDataMapper(new StrictFormMapper());
+            $originalMapper = $builder->getDataMapper();
+            if (!$originalMapper) {
+                throw new \InvalidArgumentException('Mapper not found');
+            }
+            $builder->setDataMapper(new StrictFormMapper($originalMapper));
         }
     }
 
@@ -58,14 +62,15 @@ class StrictFormTypeExtension extends AbstractTypeExtension
                 return $value;
             }
 
-            /** @var null|string $errorMessage */
-            $errorMessage = $options['factory_error_message'];
 
-            return function (FormInterface $form) use ($factory, $errorMessage) {
-                $arguments = $this->getSubmittedValuesFromCallableSignature($factory, $form);
+
+            return function (FormInterface $form) use ($factory, $options) {
+                $arguments = $this->getSubmittedValuesFromFactorySignature($factory, $form);
                 try {
-                    return $factory($arguments);
+                    return $factory(...$arguments);
                 } catch (TypeError $e) {
+                    /** @var null|string $errorMessage */
+                    $errorMessage = $options['factory_error_message'];
                     if ($errorMessage) {
                         $form->addError(new FormError($errorMessage, null, [], null, $e));
                     }
@@ -76,7 +81,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
         });
     }
 
-    private function getSubmittedValuesFromCallableSignature(callable $factory, FormInterface $form): array
+    private function getSubmittedValuesFromFactorySignature(callable $factory, FormInterface $form): array
     {
         $parameterNames = $this->getParameterNamesFromCallable($factory);
 
