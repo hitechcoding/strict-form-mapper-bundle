@@ -1,0 +1,17 @@
+<?php
+
+    return PhpCsFixer\Config::create()
+        ->setRiskyAllowed(true)
+        ->setRules([
+        '@Symfony' => true,
+        'yoda_style' => ['equal' => false],
+        'declare_strict_types' => true,
+        ])
+
+        ->setFinder(PhpCsFixer\Finder::create()
+            ->exclude('vendor')
+            ->in('src')
+            ->in('tests')
+            )
+        ;
+
