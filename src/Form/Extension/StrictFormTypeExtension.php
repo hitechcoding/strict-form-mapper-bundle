@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace HTC\StrictFormMapper\Form\Extension;
 
 use HTC\StrictFormMapper\Form\DataMapper\StrictFormMapper;
-use ReflectionFunction;
-use ReflectionMethod;
-use ReflectionParameter;
 use Symfony\Component\Form\AbstractTypeExtension;
+use Symfony\Component\Form\Exception\OutOfBoundsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidArgumentException;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use ReflectionFunction;
+use ReflectionMethod;
+use ReflectionParameter;
 use TypeError;
 use Closure;
 use function is_array;
@@ -23,6 +25,14 @@ use function array_map;
 
 class StrictFormTypeExtension extends AbstractTypeExtension
 {
+    /** @var iterable */
+    private $voters;
+
+    public function __construct($voters)
+    {
+        $this->voters = $voters;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['compound']) {
@@ -30,7 +40,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
             if (!$originalMapper) {
                 throw new \InvalidArgumentException('Mapper not found');
             }
-            $builder->setDataMapper(new StrictFormMapper($originalMapper));
+            $builder->setDataMapper(new StrictFormMapper($originalMapper, $this->voters));
         }
     }
 
@@ -44,6 +54,8 @@ class StrictFormTypeExtension extends AbstractTypeExtension
         $resolver->setDefaults([
             'get_value' => null,
             'update_value' => null,
+            'add_value' => null,
+            'remove_value' => null,
             'write_error_message' => 'Cannot write this type',
             'factory' => null,
             'factory_error_message' => 'Some fields are not valid, please correct them.',
@@ -51,9 +63,33 @@ class StrictFormTypeExtension extends AbstractTypeExtension
 
         $resolver->setAllowedTypes('get_value', ['null', 'callable']);
         $resolver->setAllowedTypes('update_value', ['null', 'callable']);
+        $resolver->setAllowedTypes('add_value', ['null', 'callable']);
+        $resolver->setAllowedTypes('remove_value', ['null', 'callable']);
         $resolver->setAllowedTypes('write_error_message', ['null', 'string']);
         $resolver->setAllowedTypes('factory', ['null', 'callable']);
         $resolver->setAllowedTypes('factory_error_message', ['null', 'string']);
+
+        $resolver->setNormalizer('get_value', function (Options $options, ?callable $getter) {
+            if ($options['add_value'] && !$options['remove_value']) {
+                throw new InvalidOptionsException('You cannot use "add_value" without "remove_value".');
+            }
+            if ($options['remove_value'] && !$options['add_value']) {
+                throw new InvalidOptionsException('You cannot use "remove_value" without "add_value".');
+            }
+            if ($options['update_value'] && $options['add_value']) {
+                throw new InvalidOptionsException('You cannot use "update_value" when adder and remover is set.');
+            }
+
+            $isUpdaterSet = $options['update_value'] || $options['add_value'];
+            if (!$getter && $isUpdaterSet) {
+                throw new InvalidOptionsException('You must define "get_value".');
+            }
+            if ($getter && !$isUpdaterSet) {
+                throw new InvalidOptionsException('You cannot use "get_value" without "update_value" or using "add_value" and "remove_value".');
+            }
+
+            return $getter;
+        });
 
         $resolver->setNormalizer('empty_data', function (Options $options, $value) {
             /** @var null|callable $factory */
@@ -62,12 +98,13 @@ class StrictFormTypeExtension extends AbstractTypeExtension
                 return $value;
             }
 
-
-
             return function (FormInterface $form) use ($factory, $options) {
-                $arguments = $this->getSubmittedValuesFromFactorySignature($factory, $form);
                 try {
+                    $arguments = $this->getSubmittedValuesFromFactorySignature($factory, $form);
+
                     return $factory(...$arguments);
+                } catch (OutOfBoundsException $e) {
+                    throw new OutOfBoundsException($e->getMessage().' Make sure your factory signature matches form fields.');
                 } catch (TypeError $e) {
                     /** @var null|string $errorMessage */
                     $errorMessage = $options['factory_error_message'];
