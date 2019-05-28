@@ -81,10 +81,10 @@ class StrictFormMapper implements DataMapperInterface
         $adder = $config->getOption('add_value');
         $remover = $config->getOption('remove_value');
 
-        $originalValues = $reader($data);
-        $submittedValue = $form->getData();
 
         try {
+            $originalValues = $reader($data);
+            $submittedValue = $form->getData();
             if ($updater) {
                 $updater($submittedValue, $data);
             } else {
