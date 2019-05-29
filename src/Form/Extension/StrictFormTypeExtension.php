@@ -39,7 +39,6 @@ class StrictFormTypeExtension extends AbstractTypeExtension
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-//        return;
         if ($options['compound']) {
             $originalMapper = $builder->getDataMapper();
             if (!$originalMapper) {

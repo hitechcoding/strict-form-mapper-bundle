@@ -19,12 +19,12 @@ class StrictFormMapper implements DataMapperInterface
 {
     private $defaultMapper;
 
-    /** @var ValueVoterInterface[] */
+    /** @var iterable|ValueVoterInterface[] */
     private $voters;
 
     private $translator;
 
-    public function __construct(DataMapperInterface $defaultMapper, iterable $voters, TranslatorInterface $translator)
+    public function __construct(DataMapperInterface $defaultMapper, $voters, TranslatorInterface $translator)
     {
         $this->defaultMapper = $defaultMapper;
         $this->voters = $voters;
@@ -122,7 +122,7 @@ class StrictFormMapper implements DataMapperInterface
         return true;
     }
 
-    private function getExtraValues(iterable $originalValues, iterable $submittedValues): array
+    private function getExtraValues(iterable $originalValues, array $submittedValues): array
     {
         if ($originalValues instanceof Traversable) {
             $originalValues = iterator_to_array($originalValues, true);
