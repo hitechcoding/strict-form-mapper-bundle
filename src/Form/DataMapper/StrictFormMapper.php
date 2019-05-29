@@ -81,9 +81,15 @@ class StrictFormMapper implements DataMapperInterface
         $adder = $config->getOption('add_value');
         $remover = $config->getOption('remove_value');
 
+        $isMultiple = $config->getOption('multiple');
 
         try {
             $originalValues = $reader($data);
+        } catch (TypeError $e) {
+            $originalValues = $isMultiple ? [] : null;
+        }
+
+        try {
             $submittedValue = $form->getData();
             if ($updater) {
                 $updater($submittedValue, $data);
@@ -115,7 +121,7 @@ class StrictFormMapper implements DataMapperInterface
     private function getExtraValues(iterable $originalValues, iterable $submittedValues): array
     {
         if ($originalValues instanceof Traversable) {
-            $originalValues = iterator_to_array($originalValues);
+            $originalValues = iterator_to_array($originalValues, true);
         }
 
         $extraValues = [];
@@ -130,9 +136,8 @@ class StrictFormMapper implements DataMapperInterface
         return $extraValues;
     }
 
-
     private function isEqual($first, $second): bool
     {
-
+        return $first === $second;
     }
 }
