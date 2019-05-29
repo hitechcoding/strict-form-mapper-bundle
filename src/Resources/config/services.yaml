@@ -4,7 +4,7 @@ services:
 
     htc_strict_form_mapper.form_extension:
         class: HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension
-        arguments: [!tagged htc_strict_form_mapper.voter]
+        arguments: [!tagged htc_strict_form_mapper.voter, '@translator']
         tags:
             - { name: form.type_extension, priority: -10 }
 

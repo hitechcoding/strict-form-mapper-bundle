@@ -18,6 +18,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use TypeError;
 use Closure;
 use function is_array;
@@ -28,9 +29,12 @@ class StrictFormTypeExtension extends AbstractTypeExtension
     /** @var iterable */
     private $voters;
 
-    public function __construct($voters)
+    private $translator;
+
+    public function __construct($voters, TranslatorInterface $translator)
     {
         $this->voters = $voters;
+        $this->translator = $translator;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -41,7 +45,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
             if (!$originalMapper) {
                 throw new \InvalidArgumentException('Mapper not found');
             }
-            $builder->setDataMapper(new StrictFormMapper($originalMapper, $this->voters));
+            $builder->setDataMapper(new StrictFormMapper($originalMapper, $this->voters, $this->translator));
         }
     }
 
@@ -110,8 +114,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
                     /** @var null|string $errorMessage */
                     $errorMessage = $options['factory_error_message'];
                     if ($errorMessage) {
-                        dump($form);
-                        $form->addError(new FormError($errorMessage, null, [], null, $e));
+                        $form->addError(new FormError($this->translator->trans($errorMessage), null, [], null, $e));
                     }
 
                     return null;
@@ -129,7 +132,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
         }, $parameterNames);
     }
 
-    private function getParameterNamesFromCallable(callable $factory): array
+    private function getParameterNamesFromCallable($factory): array
     {
         if (is_array($factory)) {
             $rf = new ReflectionMethod($factory[0], $factory[1]);

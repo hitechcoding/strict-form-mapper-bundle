@@ -8,6 +8,7 @@ use HTC\StrictFormMapper\Contract\ValueVoterInterface;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Traversable;
 use TypeError;
 use function iterator_to_array;
@@ -21,10 +22,13 @@ class StrictFormMapper implements DataMapperInterface
     /** @var ValueVoterInterface[] */
     private $voters;
 
-    public function __construct(DataMapperInterface $defaultMapper, iterable $voters)
+    private $translator;
+
+    public function __construct(DataMapperInterface $defaultMapper, iterable $voters, TranslatorInterface $translator)
     {
         $this->defaultMapper = $defaultMapper;
         $this->voters = $voters;
+        $this->translator = $translator;
     }
 
     public function mapDataToForms($data, $forms): void
@@ -110,7 +114,7 @@ class StrictFormMapper implements DataMapperInterface
             if (false === strpos($e->getMessage(), 'Argument 2 passed to')) {
                 $errorMessage = $config->getOption('write_error_message');
                 if ($errorMessage) {
-                    $form->addError(new FormError($errorMessage, null, [], null, $e));
+                    $form->addError(new FormError($this->translator->trans($errorMessage), null, [], null, $e));
                 }
             }
         }
