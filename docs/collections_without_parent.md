@@ -28,7 +28,7 @@ class ComboType extends AbstractType
                 return $data['products'];
             },
             'add_value' => function (Product $product) {
-                $this->em->persist($tag);
+                $this->em->persist($product);
             },
             'remove_value' => function (Product $product) {
                 $this->em->remove($product);
