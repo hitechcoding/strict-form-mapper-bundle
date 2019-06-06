@@ -1,15 +1,27 @@
 
 # Strict form mapper bundle
 
-This bundle adds useful options to your forms, eliminates magic access (get* and set*), turns exceptions into validation errors...
+This bundle adds useful options to your forms, eliminates magic accessors (get* and set*), turns exceptions into validation errors...
 
 
 ## Install
 
-Via Composer
+Because this bundle is still under development, it is not published to packagist. To install it, add this to composer.json
 
-``` bash
-$ composer require htc/strict-form-mapper-bundle
+``` json
+{
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "htc/strict-form-mapper-bundle": "dev-master"
+    },
+    "repositories": [
+        {
+            "type": "github",
+            "url": "https://github.com/hitechcoding/strict-form-mapper-bundle"
+        }
+    ]
+}
 ```
 
 ## Intro
@@ -24,10 +36,10 @@ This gave rise to idea of DTOs. While I **do** agree that should be the best way
 
 So as long as you don't have ``$em->flush()`` lurking somewhere in form events (and you shouldn't), with this bundle you can safely work with your strictly typed entities.
 
+## Motive
+The idea came from [rich forms bundle](https://github.com/sensiolabs-de/rich-model-forms-bundle) and tools like [phpstan](https://github.com/phpstan/phpstan). Make sure to check them out.
 
 ---
-
-##### Examples demonstrated here are using upcoming property hinting of PHP7.4, Doctrine annotations are omitted
 
 ## Usage
 

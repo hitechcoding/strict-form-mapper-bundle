@@ -1,41 +1,31 @@
 {
-    "name": "zmitic/strict-form-mapper-bundle",
+    "name": "htc/strict-form-mapper-bundle",
     "type": "symfony-bundle",
-    "description": "Better data mapper for your forms",
+    "description": "Improved data mapper for your forms",
     "keywords": [
-        "htc",
-        "spa-bundle"
+        "form mapper"
     ],
-    "homepage": "https://github.com/zmitic/strict-form-mapper-bundle",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Zeljko Mitic",
-            "email": "mitke013@gmail.com",
-            "homepage": "https://github.com/zmitic/strict-form-mapper-bundle",
-            "role": "Developer"
-        }
-    ],
     "require": {
         "php": "~7.1",
         "ext-json": "*",
         "doctrine/annotations": "^1.6",
         "sensio/framework-extra-bundle": "^5.3",
-        "symfony/dependency-injection": "^4.2",
-        "symfony/form": "^4.2",
-        "symfony/framework-bundle": "^4.2",
-        "symfony/options-resolver": "^4.2",
-        "symfony/twig-bundle": "^4.2",
-        "symfony/yaml": "^4.2",
+        "symfony/dependency-injection": "^4.0",
+        "symfony/form": "^4.0",
+        "symfony/framework-bundle": "^4.0",
+        "symfony/options-resolver": "^4.0",
+        "symfony/twig-bundle": "^4.0",
+        "symfony/yaml": "^4.0",
         "symfony/contracts": "^1.1"
     },
     "require-dev": {
         "phpstan/phpstan-shim": "^0.11.5",
         "roave/security-advisories": "dev-master",
-        "symfony/browser-kit": "^4.2",
-        "symfony/css-selector": "^4.2",
-        "symfony/phpunit-bridge": "^4.2",
-        "symfony/var-dumper": "^4.2"
+        "symfony/browser-kit": "^4.0",
+        "symfony/css-selector": "^4.0",
+        "symfony/phpunit-bridge": "^4.0",
+        "symfony/var-dumper": "^4.0"
     },
     "autoload": {
         "psr-4": {
