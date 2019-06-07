@@ -1,5 +1,5 @@
 {
-    "name": "htc/strict-form-mapper-bundle",
+    "name": "hitechcoding/strict-form-mapper-bundle",
     "type": "symfony-bundle",
     "description": "Improved data mapper for your forms",
     "keywords": [

@@ -13,7 +13,7 @@ Because this bundle is still under development, it is not published to packagist
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "htc/strict-form-mapper-bundle": "dev-master"
+        "hitechcoding/strict-form-mapper-bundle": "dev-master"
     },
     "repositories": [
         {
