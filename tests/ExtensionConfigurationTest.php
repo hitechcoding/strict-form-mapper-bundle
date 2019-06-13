@@ -4,26 +4,13 @@ declare(strict_types=1);
 
 namespace HTC\StrictFormMapper\Tests;
 
-use HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension;
-use PHPUnit\Framework\TestCase;
+use HTC\StrictFormMapper\Tests\Model\AbstractTypeTest;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\Forms;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
-class ExtensionConfigurationTest extends TestCase
+class ExtensionConfigurationTest extends AbstractTypeTest
 {
-    /** @var FormFactoryInterface */
-    private $formFactory;
-
-    public function setUp()
-    {
-        $this->formFactory = Forms::createFormFactoryBuilder()
-            ->addTypeExtension(new StrictFormTypeExtension())
-            ->getFormFactory();
-    }
-
     public function testGetterWithoutUpdater(): void
     {
         $this->expectException(InvalidOptionsException::class);
@@ -75,6 +62,6 @@ class ExtensionConfigurationTest extends TestCase
 
     private function createEmptyForm(array $options): FormInterface
     {
-        return $this->formFactory->create(FormType::class, null, $options);
+        return $this->factory->create(FormType::class, null, $options);
     }
 }

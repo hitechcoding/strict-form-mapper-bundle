@@ -14,8 +14,8 @@ class HTCStrictFormMapperExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yaml');
+        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.xml');
 
         $container->registerForAutoconfiguration(ValueVoterInterface::class)->addTag('htc_strict_form_mapper.voter');
     }

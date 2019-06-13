@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- ... -->
+
+        <service id="htc_strict_form_mapper.form_extension" class="HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension">
+            <argument type="tagged" tag="htc_strict_form_mapper.voter"/>
+            <argument type="service" id="translator" on-invalid="null"/>
+            <tag name="form.type_extension" priority="-10" />
+        </service>
+    </services>
+</container>

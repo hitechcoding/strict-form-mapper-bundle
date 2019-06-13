@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HTC\StrictFormMapper\Form\Extension;
 
 use HTC\StrictFormMapper\Form\DataMapper\StrictFormMapper;
+use ReflectionFunctionAbstract;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Exception\OutOfBoundsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -17,12 +18,10 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use ReflectionFunction;
 use ReflectionMethod;
-use ReflectionParameter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TypeError;
 use Closure;
 use function is_array;
-use function array_map;
 
 class StrictFormTypeExtension extends AbstractTypeExtension
 {
@@ -31,7 +30,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
 
     private $translator;
 
-    public function __construct($voters, TranslatorInterface $translator)
+    public function __construct($voters, ?TranslatorInterface $translator)
     {
         $this->voters = $voters;
         $this->translator = $translator;
@@ -113,7 +112,8 @@ class StrictFormTypeExtension extends AbstractTypeExtension
                     /** @var null|string $errorMessage */
                     $errorMessage = $options['factory_error_message'];
                     if ($errorMessage) {
-                        $form->addError(new FormError($this->translator->trans($errorMessage), null, [], null, $e));
+                        $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
+                        $form->addError(new FormError($translatedMessage, null, [], null, $e));
                     }
 
                     return null;
@@ -124,14 +124,23 @@ class StrictFormTypeExtension extends AbstractTypeExtension
 
     private function getSubmittedValuesFromFactorySignature(callable $factory, FormInterface $form): array
     {
-        $parameterNames = $this->getParameterNamesFromCallable($factory);
+        $reflection = $this->getReflection($factory);
+        $arguments = [];
+        foreach ($reflection->getParameters() as $parameter) {
+            $parameter->getClass();
+            $type = $parameter->getClass();
 
-        return array_map(function (string $name) use ($form) {
-            return $form->get($name)->getData();
-        }, $parameterNames);
+            if ($type && $type->implementsInterface(FormInterface::class)) {
+                $arguments[] = $form;
+            } else {
+                $arguments[] = $form->get($parameter->getName())->getData();
+            }
+        }
+
+        return $arguments;
     }
 
-    private function getParameterNamesFromCallable($factory): array
+    private function getReflection($factory): ReflectionFunctionAbstract
     {
         if (is_array($factory)) {
             $rf = new ReflectionMethod($factory[0], $factory[1]);
@@ -141,8 +150,6 @@ class StrictFormTypeExtension extends AbstractTypeExtension
             throw new InvalidArgumentException('Unsupported callable, use Closures or [$object, "method"] syntax.');
         }
 
-        return array_map(function (ReflectionParameter $reflectionParameter) {
-            return $reflectionParameter->getName();
-        }, $rf->getParameters());
+        return $rf;
     }
 }

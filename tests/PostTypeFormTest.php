@@ -4,24 +4,13 @@ declare(strict_types=1);
 
 namespace HTC\StrictFormMapper\Tests;
 
-use HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension;
 use HTC\StrictFormMapper\Tests\Fixtures\Form\PostType;
 use HTC\StrictFormMapper\Tests\Fixtures\Model\Post;
-use HTC\StrictFormMapper\Voter\DateTimeVoter;
-use Symfony\Component\Form\Test\TypeTestCase;
 use function array_values;
+use HTC\StrictFormMapper\Tests\Model\AbstractTypeTest;
 
-class PostTypeFormTest extends TypeTestCase
+class PostTypeFormTest extends AbstractTypeTest
 {
-    protected function getTypeExtensions(): array
-    {
-        return [
-            new StrictFormTypeExtension([
-                new DateTimeVoter(),
-            ]),
-        ];
-    }
-
     public function testFactoryFailureWillMakeValidationError(): void
     {
         $form = $this->factory->create(PostType::class);
