@@ -57,6 +57,9 @@ class StrictFormMapper implements DataMapperInterface
      */
     public function mapFormsToData($forms, &$data): void
     {
+        if (null === $data) {
+            return;
+        }
         $unmappedForms = [];
 
         foreach ($forms as $form) {
