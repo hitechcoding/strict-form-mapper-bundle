@@ -9,6 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PostType extends AbstractType
@@ -39,6 +40,11 @@ class PostType extends AbstractType
             'allow_add' => true,
             'allow_delete' => true,
             'entry_type' => TextType::class,
+            'entry_options' => [
+                'factory' => function (FormInterface $form) {
+                    dd($form);
+                },
+            ],
             'get_value' => function (Post $post) {
                 return $post->getTags();
             },
@@ -48,6 +54,8 @@ class PostType extends AbstractType
             'remove_value' => function (string $tag, Post $post) {
                 $post->removeTag($tag);
             },
+            // no need for errors when reading and writing, child class will show its own error
+            'write_error_message' => null,
         ]);
     }
 

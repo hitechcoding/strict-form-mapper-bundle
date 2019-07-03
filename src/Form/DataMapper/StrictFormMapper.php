@@ -24,7 +24,7 @@ class StrictFormMapper implements DataMapperInterface
 
     private $translator;
 
-    public function __construct(DataMapperInterface $defaultMapper, $voters, TranslatorInterface $translator)
+    public function __construct(DataMapperInterface $defaultMapper, $voters, ?TranslatorInterface $translator)
     {
         $this->defaultMapper = $defaultMapper;
         $this->voters = $voters;
@@ -117,7 +117,8 @@ class StrictFormMapper implements DataMapperInterface
             if (false === strpos($e->getMessage(), 'Argument 2 passed to')) {
                 $errorMessage = $config->getOption('write_error_message');
                 if ($errorMessage) {
-                    $form->addError(new FormError($this->translator->trans($errorMessage), null, [], null, $e));
+                    $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
+                    $form->addError(new FormError($translatedMessage, null, [], null, $e));
                 }
             }
         }

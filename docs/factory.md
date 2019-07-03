@@ -124,7 +124,7 @@ With this code, if TypeError exception is thrown (i.e. category is null), it wil
 In most cases you would want to suppress it (``'factory_error_message' => null``) because error on ``category`` field will be enough.
 
 
-
+You can still inject form object like for empty data; just typehint it with ``FormInterface`` (name and order is irrelevant).
 
 #### Warning
 The parameters of ``factory`` callable **must** be named as fields of your form, order is irrelevant. Otherwise, bundle can not know which form fields you want injected.

@@ -14,6 +14,7 @@ class Comment
     {
         $this->post = $post;
         $this->message = $message;
+        $post->addComment($this);
     }
 
     public function getPost(): Post
