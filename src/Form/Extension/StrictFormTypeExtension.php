@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace HTC\StrictFormMapper\Form\Extension;
 
 use HTC\StrictFormMapper\Form\DataMapper\StrictFormMapper;
-use ReflectionFunctionAbstract;
+use HTC\StrictFormMapper\Util\FactoryParametersReader;
+use InvalidArgumentException;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Exception\OutOfBoundsException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\OptionsResolver\Exception\InvalidArgumentException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use ReflectionFunction;
-use ReflectionMethod;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TypeError;
-use Closure;
-use function is_array;
 
 class StrictFormTypeExtension extends AbstractTypeExtension
 {
@@ -41,8 +37,9 @@ class StrictFormTypeExtension extends AbstractTypeExtension
         if ($options['compound']) {
             $originalMapper = $builder->getDataMapper();
             if (!$originalMapper) {
-                throw new \InvalidArgumentException('Mapper not found');
+                throw new InvalidArgumentException('Mapper not found');
             }
+
             $builder->setDataMapper(new StrictFormMapper($originalMapper, $this->voters, $this->translator));
         }
     }
@@ -100,56 +97,29 @@ class StrictFormTypeExtension extends AbstractTypeExtension
             if (!$factory) {
                 return $value;
             }
+            $errorMessage = $options['factory_error_message'];
 
-            return function (FormInterface $form) use ($factory, $options) {
-                try {
-                    $arguments = $this->getSubmittedValuesFromFactorySignature($factory, $form);
-
-                    return $factory(...$arguments);
-                } catch (OutOfBoundsException $e) {
-                    throw new OutOfBoundsException($e->getMessage().' Make sure your factory signature matches form fields.');
-                } catch (TypeError $e) {
-                    /** @var null|string $errorMessage */
-                    $errorMessage = $options['factory_error_message'];
-                    if ($errorMessage) {
-                        $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
-                        $form->addError(new FormError($translatedMessage, null, [], null, $e));
-                    }
-
-                    return null;
-                }
+            return function (FormInterface $form) use ($factory, $errorMessage) {
+                return $this->getFactoryData($form, $factory, $errorMessage);
             };
         });
     }
 
-    private function getSubmittedValuesFromFactorySignature(callable $factory, FormInterface $form): array
+    private function getFactoryData(FormInterface $form, callable $factory, ?string $errorMessage)
     {
-        $reflection = $this->getReflection($factory);
-        $arguments = [];
-        foreach ($reflection->getParameters() as $parameter) {
-            $parameter->getClass();
-            $type = $parameter->getClass();
+        try {
+            $arguments = FactoryParametersReader::getCallableArguments($factory, $form);
 
-            if ($type && $type->implementsInterface(FormInterface::class)) {
-                $arguments[] = $form;
-            } else {
-                $arguments[] = $form->get($parameter->getName())->getData();
+            return $factory(...$arguments);
+        } catch (OutOfBoundsException $e) {
+            throw new OutOfBoundsException($e->getMessage().' Make sure your factory signature matches form fields.');
+        } catch (TypeError $e) {
+            if ($errorMessage) {
+                $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
+                $form->addError(new FormError($translatedMessage, null, [], null, $e));
             }
+
+            return null;
         }
-
-        return $arguments;
-    }
-
-    private function getReflection($factory): ReflectionFunctionAbstract
-    {
-        if (is_array($factory)) {
-            $rf = new ReflectionMethod($factory[0], $factory[1]);
-        } elseif ($factory instanceof Closure) {
-            $rf = new ReflectionFunction($factory);
-        } else {
-            throw new InvalidArgumentException('Unsupported callable, use Closures or [$object, "method"] syntax.');
-        }
-
-        return $rf;
     }
 }

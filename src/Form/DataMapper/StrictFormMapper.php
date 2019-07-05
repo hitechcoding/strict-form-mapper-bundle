@@ -24,6 +24,7 @@ class StrictFormMapper implements DataMapperInterface
 
     private $translator;
 
+
     public function __construct(DataMapperInterface $defaultMapper, $voters, ?TranslatorInterface $translator)
     {
         $this->defaultMapper = $defaultMapper;
@@ -57,9 +58,6 @@ class StrictFormMapper implements DataMapperInterface
      */
     public function mapFormsToData($forms, &$data): void
     {
-        if (null === $data) {
-            return;
-        }
         $unmappedForms = [];
 
         foreach ($forms as $form) {
