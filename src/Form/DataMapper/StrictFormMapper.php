@@ -8,12 +8,10 @@ use HTC\StrictFormMapper\Contract\ValueVoterInterface;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Traversable;
 use TypeError;
-use function in_array;
 use function iterator_to_array;
 use function strpos;
 use function array_search;
@@ -35,8 +33,18 @@ class StrictFormMapper implements DataMapperInterface
         $this->translator = $translator;
     }
 
+    /**
+     * Maps the view data of a compound form to its children.
+     *
+     * The method is responsible for calling {@link FormInterface::setData()}
+     * on the children of compound forms, defining their underlying model data.
+     *
+     * @param mixed                        $data View data of the compound form being initialized
+     * @param FormInterface[]|Traversable $forms    A list of {@link FormInterface} instances
+     */
     public function mapDataToForms($data, $forms): void
     {
+        /** @var FormInterface[]|Traversable $unmappedForms */
         $unmappedForms = [];
 
         foreach ($forms as $form) {
@@ -61,6 +69,7 @@ class StrictFormMapper implements DataMapperInterface
      */
     public function mapFormsToData($forms, &$data): void
     {
+        /** @var FormInterface[]|Traversable $unmappedForms */
         $unmappedForms = [];
 
         foreach ($forms as $form) {
