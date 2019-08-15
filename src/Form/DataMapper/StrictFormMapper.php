@@ -8,9 +8,12 @@ use HTC\StrictFormMapper\Contract\ValueVoterInterface;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Traversable;
 use TypeError;
+use function in_array;
 use function iterator_to_array;
 use function strpos;
 use function array_search;
@@ -94,8 +97,8 @@ class StrictFormMapper implements DataMapperInterface
             $originalValues = $isMultiple ? [] : null;
         }
 
+        $submittedValue = $form->getData();
         try {
-            $submittedValue = $form->getData();
             if ($updater) {
                 $updater($submittedValue, $data);
             } else {
@@ -113,6 +116,16 @@ class StrictFormMapper implements DataMapperInterface
             // Second argument is typehinted data object.
             // We are not interested if exception happens on it; it means 'factory' failed and it is parent-level error message.
             if (false === strpos($e->getMessage(), 'Argument 2 passed to')) {
+                // if there is NotNull constraint on this field, we don't need custom error message; Symfony will take care of error
+                if (null === $submittedValue) {
+                    $constraints = $config->getOption('constraints');
+                    foreach ($constraints as $constraint) {
+                        if ($constraint instanceof NotNull) {
+                            return true;
+                        }
+                    }
+                }
+
                 $errorMessage = $config->getOption('write_error_message');
                 if ($errorMessage) {
                     $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
