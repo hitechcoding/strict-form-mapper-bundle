@@ -51,29 +51,22 @@ When there is no underlying data (entity), Symfony will look for [``empty_data``
 ```php
 public function buildForm(FormBuilderInterface $builder, array $options): void
 {
-    $builder->add('category', EntityType::class, [
-        'constraints' => [
-            new NotNull(['message' => 'You must select category.']),
-        ],
-        ... 
-    ]);
+    $builder->add('category', EntityType::class);
 }
 
 public function configureOptions(OptionsResolver $resolver): void
 {
     $resolver->setDefaults([
-        'empty_data' => function (FormInterface $form) {
-            return new Product($form->get('category')->getData());
-        },
+        'empty_data' => fn (FormInterface $form) => new Product($form->get('category')->getData()),
     ]);
 }
 ```
 
 
-The problem is when submitted ``category`` is null; your constructor does not allow it and will throw TypeError exception.
+The problem is when submitted ``category`` is null; your constructor does not allow it and will throw TypeError exception. One solution would be to wrap instance creation into try/catch(TypeError $e) and add validation error but it is boring and repeatable job.
 
 
-You could solve it by removing dependency from constructor but then your return declaration must be:
+The other way is to remove dependency from constructor but then your return declaration must be:
 
 ```php
 class Product
@@ -87,7 +80,7 @@ class Product
 }
 ```
 
-Now at beginning, we decided that product must **always** have a category but clearly, the code says it can be null. We are breaking rules just to make our form work. This is where you would have to use DTO to fix the problem.
+Now at beginning, we decided that product must **always** have a category but clearly, the code says it can be null. We would be breaking business rules just to make our form work. This is where you would **have** to use DTO to fix the problem.
 
 ---
 So instead of ``empty_data``, let's use ``factory``:
@@ -95,9 +88,7 @@ So instead of ``empty_data``, let's use ``factory``:
 public function configureOptions(OptionsResolver $resolver): void
 {
     $resolver->setDefaults([
-        'factory' => function (Category $category) {
-             return new Product($category);
-         },
+        'factory' => fn (Category $category) => new Product($category),
         'factory_error_message' => 'Cannot create new instance of Product entity',
     ]);
 }
@@ -124,9 +115,11 @@ With this code, if TypeError exception is thrown (i.e. category is null), it wil
 In most cases you would want to suppress it (``'factory_error_message' => null``) because error on ``category`` field will be enough.
 
 
-You can still inject form object like for empty data; just typehint it with ``FormInterface`` (name and order is irrelevant).
 
 #### Warning
-The parameters of ``factory`` callable **must** be named as fields of your form, order is irrelevant. Otherwise, bundle can not know which form fields you want injected.
+The parameters of ``factory`` callable **must** be named as fields of your form, order is irrelevant. Otherwise, bundle can not know which form values you want injected.
+
+You can still inject form object like for ``empty_data``; just typehint it with ``FormInterface``.
+
 
 So far, we **only** replaced ``empty_data`` with ``factory``. To make our form fully working, you also need to set [accessors](/docs/accessors.md) to field and your entity can be safely used in forms.

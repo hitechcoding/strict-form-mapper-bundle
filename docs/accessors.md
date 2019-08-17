@@ -2,12 +2,7 @@ When you add field to form, Symfony will use ``get*`` and ``set*`` prefix to acc
 
 
 ```php
-$builder->add('category', EntityType::class, [
-    'constraints' => [
-        new NotNull(['message' => 'You must select category.']),
-    ],
-    ... 
-]);
+$builder->add('category', EntityType::class);
 
 ```
 
@@ -30,26 +25,20 @@ class Product
 
 This brings few problems; 
 - you are forced to ``get*/set*`` naming convention in your classes
-- even though your logic requires instance of Category, not using nullable declaration will throw TypeError exception
+- even though your logic requires instance of Category, not using nullable types will throw TypeError exception
 - renaming method from ``setCategory`` to ``changeCategory`` **will** break your form
 - both methods will be reported as ``unused`` in your IDE or by tools that detect them
 
 ---
-Instead, use this:
+Instead, use this (upcoming arrow functions used for better readability):
 
 ```php
 $builder->add('category', EntityType::class, [
-    'get_value' => function (Product $product) {
-        return $product->getCategory();      
-    },
-    'update_value' => function (Category $category, Product $product) {
-        $product->changeCategory($category);
-    },
+    'get_value' => fn(Product $product) => $product->getCategory(),
+    'update_value' => fn (Category $category, Product $product) => $product->changeCategory($category),
     'write_error_message' => 'You must select category from dropdown.',
 ]);
 ```
-
-##### This code is far more readable with upcoming [arrow functions syntax](https://wiki.php.net/rfc/arrow_functions_v2). Make sure to check it.
 
 Your entity can now be:
 
@@ -112,15 +101,9 @@ The form:
 ```php
 $builder->add('categories', EntityType::class, [
     'multiple' => true,
-    'get_value' => function (Product $product) {
-        return $product->getCategories();      
-    },
-    'add_value' => function (Category $category, Product $product) {
-        $product->addCategory($category);
-    },
-    'remove_value' => function (Category $category, Product $product) {
-         $product->removeCategory($category);
-     },
+    'get_value' => fn (Product $product) => $product->getCategories(),
+    'add_value' => fn (Category $category, Product $product) => $product->addCategory($category),
+    'remove_value' => fn (Category $category, Product $product) => $product->removeCategory($category),
     'write_error_message' => 'You must select category from dropdown.',
 ]);
 ```
@@ -143,9 +126,7 @@ class Product
 
 and form:
 ```php
-'remove_value' => function (Category $category, Product $product) {
-     $product->removeCategory($category, true);
- },
+'remove_value' => fn (Category $category, Product $product) => $product->removeCategory($category, true),
 ```
 
 Another advantage is that it allows you to work with collections without parent class. Check [documentation for that](collections_without_parent.md)

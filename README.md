@@ -1,7 +1,7 @@
 
 # Strict form mapper bundle
 
-This bundle adds useful options to your forms, eliminates magic accessors (get* and set*), turns exceptions into validation errors...
+This bundle adds useful options to your forms, eliminates magic accessors (get* and set*), turns TypeError exceptions into validation errors...
 
 
 ## Install
@@ -46,3 +46,7 @@ The idea came from [rich forms bundle](https://github.com/sensiolabs-de/rich-mod
 - [Factory](/docs/factory.md)
 - [Accessors](/docs/accessors.md)
 - [Collections without parent](/docs/collections_without_parent.md)
+- [Not null validation](/docs/validation.md)
+
+###### Notice
+All examples shown use new PHP7.4 features like typed properties and arrow functions, for readability reasons. Bundle itself still requires only PHP7.1. 
