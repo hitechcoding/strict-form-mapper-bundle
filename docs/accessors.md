@@ -30,7 +30,7 @@ This brings few problems;
 - both methods will be reported as ``unused`` in your IDE or by tools that detect them
 
 ---
-Instead, use this (upcoming arrow functions used for better readability):
+Instead, use this:
 
 ```php
 $builder->add('category', EntityType::class, [
@@ -56,8 +56,6 @@ class Product
     }
 }
 ```
-
-The value of ``write_error_message`` will be rendered as translated field error when ever TypeError exception is thrown. If you leave it empty, you must provide ``NotNull`` constraint that will deal with it.
 
 With these 2 callables, you have solved the problems above. Your entity is now ready to be used in strict mode.
 

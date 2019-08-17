@@ -4,7 +4,7 @@ In most cases this will not be a problem. But if you have really complex app whe
 
 Another problem is that [Doctrine best practices](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/best-practices.html) says to avoid bidirectional relations when possible. 
 
-You can avoid that by using callback on form level. For example, let's say you want to edit multiple products in one form:
+You can avoid that by using adders and removers on form level instead. For example, let's say you want to edit multiple products in one form:
 
 ```php
 class ComboType extends AbstractType
@@ -47,6 +47,7 @@ class ComboType extends AbstractType
 
 If you are sure this is not a problem, create [form extension](https://symfony.com/doc/current/form/create_form_type_extension.html) that will nullify it for all collections in your project.
 
+---
 
 With default mapper, you would have to use some class as DTO and inject $em into it, just so you can call ``$em->persist()`` and ``$em->remove()`` when you add or remove a product. 
 
