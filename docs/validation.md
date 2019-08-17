@@ -3,7 +3,7 @@
 ```php
 class Product
 {
-    /** @Asset\NotNull */
+    /** @Assert\NotNull */
     private Category $category;
 
     public function __construct(Category $category)
