@@ -6,6 +6,7 @@ namespace HTC\StrictFormMapper\Form\DataMapper;
 
 use HTC\StrictFormMapper\Contract\ValueVoterInterface;
 use Symfony\Component\Form\DataMapperInterface;
+use Symfony\Component\Form\FormConfigInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Constraints\NotNull;
@@ -25,7 +26,6 @@ class StrictFormMapper implements DataMapperInterface
 
     private $translator;
 
-
     public function __construct(DataMapperInterface $defaultMapper, $voters, ?TranslatorInterface $translator)
     {
         $this->defaultMapper = $defaultMapper;
@@ -33,15 +33,6 @@ class StrictFormMapper implements DataMapperInterface
         $this->translator = $translator;
     }
 
-    /**
-     * Maps the view data of a compound form to its children.
-     *
-     * The method is responsible for calling {@link FormInterface::setData()}
-     * on the children of compound forms, defining their underlying model data.
-     *
-     * @param mixed                        $data View data of the compound form being initialized
-     * @param FormInterface[]|Traversable $forms    A list of {@link FormInterface} instances
-     */
     public function mapDataToForms($data, $forms): void
     {
         /** @var FormInterface[]|Traversable $unmappedForms */
@@ -64,9 +55,6 @@ class StrictFormMapper implements DataMapperInterface
         $this->defaultMapper->mapDataToForms($data, $unmappedForms);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function mapFormsToData($forms, &$data): void
     {
         /** @var FormInterface[]|Traversable $unmappedForms */
@@ -88,7 +76,7 @@ class StrictFormMapper implements DataMapperInterface
     private function writeFormValueToData(FormInterface $form, &$data): bool
     {
         $config = $form->getConfig();
-        /** @var null|callable $reader */
+        /** @var callable|null $reader */
         $reader = $config->getOption('get_value');
         if (!$reader) {
             return false;
@@ -124,22 +112,19 @@ class StrictFormMapper implements DataMapperInterface
         } catch (TypeError $e) {
             // Second argument is typehinted data object.
             // We are not interested if exception happens on it; it means 'factory' failed and it is parent-level error message.
-            if (false === strpos($e->getMessage(), 'Argument 2 passed to')) {
-                // if there is NotNull constraint on this field, we don't need custom error message; Symfony will take care of error
-                if (null === $submittedValue) {
-                    $constraints = $config->getOption('constraints');
-                    foreach ($constraints as $constraint) {
-                        if ($constraint instanceof NotNull) {
-                            return true;
-                        }
-                    }
-                }
+            if (false !== strpos($e->getMessage(), 'Argument 2 passed to')) {
+                return true;
+            }
 
-                $errorMessage = $config->getOption('write_error_message');
-                if ($errorMessage) {
-                    $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
-                    $form->addError(new FormError($translatedMessage, null, [], null, $e));
-                }
+            // if there is NotNull constraint on this field, we don't need custom error message; Symfony will take care of it
+            if (null === $submittedValue && $this->doesFormHaveNotNullConstraint($config)) {
+                return true;
+            }
+
+            $errorMessage = $config->getOption('write_error_message');
+            if ($errorMessage) {
+                $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
+                $form->addError(new FormError($translatedMessage, null, [], null, $e));
             }
         }
 
@@ -167,5 +152,17 @@ class StrictFormMapper implements DataMapperInterface
     private function isEqual($first, $second): bool
     {
         return $first === $second;
+    }
+
+    private function doesFormHaveNotNullConstraint(FormConfigInterface $config): bool
+    {
+        $constraints = $config->getOption('constraints');
+        foreach ($constraints as $constraint) {
+            if ($constraint instanceof NotNull) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
