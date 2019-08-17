@@ -35,13 +35,13 @@ class FactoryParametersReader
     private static function getReflection($factory): ReflectionFunctionAbstract
     {
         if (is_array($factory)) {
-            $rf = new ReflectionMethod($factory[0], $factory[1]);
-        } elseif ($factory instanceof Closure) {
-            $rf = new ReflectionFunction($factory);
-        } else {
-            throw new InvalidArgumentException('Unsupported callable, use Closures or [$object, "method"] syntax.');
+            return new ReflectionMethod($factory[0], $factory[1]);
         }
 
-        return $rf;
+        if ($factory instanceof Closure) {
+            return new ReflectionFunction($factory);
+        }
+
+        throw new InvalidArgumentException('Unsupported callable, use Closures or [$object, "method"] syntax.');
     }
 }
