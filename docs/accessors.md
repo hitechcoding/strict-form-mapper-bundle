@@ -34,7 +34,7 @@ Instead, use this:
 
 ```php
 $builder->add('category', EntityType::class, [
-    'get_value' => fn(Product $product) => $product->getCategory(),
+    'get_value' => fn (Product $product) => $product->getCategory(),
     'update_value' => fn (Category $category, Product $product) => $product->changeCategory($category),
     'write_error_message' => 'You must select category from dropdown.',
 ]);
