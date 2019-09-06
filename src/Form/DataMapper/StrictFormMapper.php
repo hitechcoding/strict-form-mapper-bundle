@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HTC\StrictFormMapper\Form\DataMapper;
 
+use DateTimeInterface;
 use HTC\StrictFormMapper\Contract\ValueVoterInterface;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormConfigInterface;
@@ -97,7 +98,9 @@ class StrictFormMapper implements DataMapperInterface
         $submittedValue = $form->getData();
         try {
             if ($updater) {
-                $updater($submittedValue, $data);
+                if (!$this->isEqual($submittedValue, $originalValues)) {
+                    $updater($submittedValue, $data);
+                }
             } else {
                 $addedValues = $this->getExtraValues($originalValues, $submittedValue);
                 $removedValues = $this->getExtraValues($submittedValue, $originalValues);
@@ -151,7 +154,15 @@ class StrictFormMapper implements DataMapperInterface
 
     private function isEqual($first, $second): bool
     {
-        return $first === $second;
+        if ($first === $second) {
+            return  true;
+        }
+
+        if ($first instanceof DateTimeInterface || $second instanceof DateTimeInterface) {
+            return $first == $second;
+        }
+
+        return false;
     }
 
     private function doesFormHaveNotNullConstraint(FormConfigInterface $config): bool
