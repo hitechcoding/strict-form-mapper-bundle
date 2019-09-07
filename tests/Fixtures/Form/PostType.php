@@ -40,11 +40,6 @@ class PostType extends AbstractType
             'allow_add' => true,
             'allow_delete' => true,
             'entry_type' => TextType::class,
-            'entry_options' => [
-                'factory' => function (FormInterface $form) {
-                    dd($form);
-                },
-            ],
             'get_value' => function (Post $post) {
                 return $post->getTags();
             },

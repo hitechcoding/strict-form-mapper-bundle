@@ -14,7 +14,7 @@ class PostTypeFormTest extends AbstractTypeTest
     public function testFactoryFailureWillMakeValidationError(): void
     {
         $form = $this->factory->create(PostType::class);
-        $form->submit($this->getInvalidData());
+        $form->submit($this->getInvalidData(), false);
 
         $subject = $form->get('first');
         $body = $form->get('second');

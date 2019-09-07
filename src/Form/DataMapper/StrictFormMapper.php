@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Traversable;
 use TypeError;
+use function is_countable;
 use function iterator_to_array;
 use function strpos;
 use function array_search;
@@ -89,16 +90,21 @@ class StrictFormMapper implements DataMapperInterface
 
         $isMultiple = $config->getOption('multiple');
 
-        try {
+        if ($data) {
             $originalValues = $reader($data);
-        } catch (TypeError $e) {
+        } else {
             $originalValues = $isMultiple ? [] : null;
         }
 
         $submittedValue = $form->getData();
         try {
+            // single access
             if ($updater) {
-                if (!$this->isEqual($submittedValue, $originalValues)) {
+                // if no data, trigger update so TypeError can still be thrown
+                if (!$data) {
+                    $updater($submittedValue, $data);
+                    // we have data object; trigger update only if values are not the same
+                } elseif (!$this->isEqual($submittedValue, $originalValues)) {
                     $updater($submittedValue, $data);
                 }
             } else {
@@ -125,13 +131,28 @@ class StrictFormMapper implements DataMapperInterface
             }
 
             $errorMessage = $config->getOption('write_error_message');
-            if ($errorMessage) {
+            // do not add errors when adder or remover failed
+            if ($errorMessage && !is_countable($submittedValue)) {
                 $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
                 $form->addError(new FormError($translatedMessage, null, [], null, $e));
             }
         }
 
         return true;
+    }
+
+    private function isEqual($first, $second): bool
+    {
+        if ($first === $second) {
+            return true;
+        }
+
+        if ($first instanceof DateTimeInterface || $second instanceof DateTimeInterface) {
+            /** @noinspection TypeUnsafeComparisonInspection */
+            return $first == $second;
+        }
+
+        return false;
     }
 
     private function getExtraValues(iterable $originalValues, array $submittedValues): array
@@ -152,22 +173,9 @@ class StrictFormMapper implements DataMapperInterface
         return $extraValues;
     }
 
-    private function isEqual($first, $second): bool
-    {
-        if ($first === $second) {
-            return  true;
-        }
-
-        if ($first instanceof DateTimeInterface || $second instanceof DateTimeInterface) {
-            return $first == $second;
-        }
-
-        return false;
-    }
-
     private function doesFormHaveNotNullConstraint(FormConfigInterface $config): bool
     {
-        $constraints = $config->getOption('constraints');
+        $constraints = $config->getOption('constraints') ?? [];
         foreach ($constraints as $constraint) {
             if ($constraint instanceof NotNull) {
                 return true;
