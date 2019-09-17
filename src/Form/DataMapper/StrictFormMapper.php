@@ -134,7 +134,9 @@ class StrictFormMapper implements DataMapperInterface
             // do not add errors when adder or remover failed
             if ($errorMessage && !is_countable($submittedValue)) {
                 $translatedMessage = $this->translator ? $this->translator->trans($errorMessage) : $errorMessage;
-                $form->addError(new FormError($translatedMessage, null, [], null, $e));
+                if (null === $form->getTransformationFailure()) {
+                    $form->addError(new FormError($translatedMessage, null, [], null, $e));
+                }
             }
         }
 
