@@ -1,6 +1,6 @@
 ### The problem
 
-For simplicity reasons, let's say that you have a Product entity which **must** belong to Category; i.e. it can never be null.
+For simplicity reasons, let's say that you have a Product entity which **must** belong to a Category; i.e. it can never be null.
 
 The correct way is to inject that value into constructor:
 
@@ -71,7 +71,7 @@ The other way is to remove dependency from constructor but then your return decl
 ```php
 class Product
 {
-    private ?Category $category;
+    private ?Category $category = null;
     
     public function getCategory(): ?Category
     {
