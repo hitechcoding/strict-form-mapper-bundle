@@ -49,6 +49,11 @@ class StrictFormTypeExtension extends AbstractTypeExtension
         return [FormType::class];
     }
 
+    public function getExtendedType(): string
+    {
+        return FormType::class;
+    }
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
