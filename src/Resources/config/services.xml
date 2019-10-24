@@ -10,7 +10,7 @@
         <service id="htc_strict_form_mapper.form_extension" class="HTC\StrictFormMapper\Form\Extension\StrictFormTypeExtension">
             <argument type="tagged" tag="htc_strict_form_mapper.voter"/>
             <argument type="service" id="translator" on-invalid="null"/>
-            <tag name="form.type_extension" priority="1" />
+            <tag name="form.type_extension" priority="1" extended-type="Symfony\Component\Form\Extension\Core\Type\FormType" />
         </service>
     </services>
 </container>
