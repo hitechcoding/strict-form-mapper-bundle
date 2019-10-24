@@ -18,7 +18,8 @@
         "symfony/validator": "^3.4|^4.1",
         "symfony/twig-bundle": "^3.4|^4.1",
         "symfony/yaml": "^3.4|^4.1",
-        "symfony/contracts": "^1.1"
+        "symfony/contracts": "^1.1",
+        "symfony/translation": "^3.4|^4.1"
     },
     "require-dev": {
         "phpstan/phpstan-shim": "^0.11.5",
