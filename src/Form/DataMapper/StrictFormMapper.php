@@ -111,11 +111,11 @@ class StrictFormMapper implements DataMapperInterface
                 $addedValues = $this->getExtraValues($originalValues, $submittedValue);
                 $removedValues = $this->getExtraValues($submittedValue, $originalValues);
 
-                foreach ($addedValues as $value) {
-                    $adder($value, $data);
-                }
                 foreach ($removedValues as $value) {
                     $remover($value, $data);
+                }
+                foreach ($addedValues as $value) {
+                    $adder($value, $data);
                 }
             }
         } catch (TypeError $e) {
