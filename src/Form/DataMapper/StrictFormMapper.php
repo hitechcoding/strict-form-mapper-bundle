@@ -90,9 +90,13 @@ class StrictFormMapper implements DataMapperInterface
 
         $isMultiple = $config->getOption('multiple');
 
-        if ($data) {
-            $originalValues = $reader($data);
-        } else {
+        try {
+            if ($data) {
+                $originalValues = $reader($data);
+            } else {
+                $originalValues = $isMultiple ? [] : null;
+            }
+        } catch (TypeError $e) {
             $originalValues = $isMultiple ? [] : null;
         }
 
