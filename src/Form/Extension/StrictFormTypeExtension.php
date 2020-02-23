@@ -26,7 +26,7 @@ class StrictFormTypeExtension extends AbstractTypeExtension
 
     private $translator;
 
-    public function __construct($voters, ?TranslatorInterface $translator)
+    public function __construct($voters, $translator)
     {
         $this->voters = $voters;
         $this->translator = $translator;
