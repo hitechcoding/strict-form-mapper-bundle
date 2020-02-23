@@ -28,7 +28,7 @@ class StrictFormMapper implements DataMapperInterface
 
     private $translator;
 
-    public function __construct(DataMapperInterface $defaultMapper, $voters, ?TranslatorInterface $translator)
+    public function __construct(DataMapperInterface $defaultMapper, $voters, $translator)
     {
         $this->defaultMapper = $defaultMapper;
         $this->voters = $voters;
