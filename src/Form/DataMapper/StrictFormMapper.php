@@ -88,7 +88,7 @@ class StrictFormMapper implements DataMapperInterface
         $adder = $config->getOption('add_value');
         $remover = $config->getOption('remove_value');
 
-        $isMultiple = $config->getOption('multiple');
+        $isMultiple = $config->hasOption('entry_type');
 
         try {
             if ($data) {
